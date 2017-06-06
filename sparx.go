@@ -51,20 +51,20 @@ func l2Inv(x []uint16) {
 	x[3] ^= x[1] ^ tmp
 }
 
-func kPerm64x128(k []uint16, c uint16) {
+func perm64x128(k []uint16, c uint16) {
 	/* Misty-like transformation */
 	a(&k[0], &k[1])
 	k[2] += k[0]
 	k[3] += k[1]
 	k[7] += c
 	/* Branch rotation */
-	tmp_0 := k[6]
-	tmp_1 := k[7]
+	tmp0 := k[6]
+	tmp1 := k[7]
 	for i := 7; i >= 2; i-- {
 		k[i] = k[i-2]
 	}
-	k[0] = tmp_0
-	k[1] = tmp_1
+	k[0] = tmp0
+	k[1] = tmp1
 }
 
 func New(masterKey []uint16) *Cipher {
@@ -74,7 +74,7 @@ func New(masterKey []uint16) *Cipher {
 		for i := 0; i < 2*roundsPerSteps; i++ {
 			cipher.k[c][i] = masterKey[i]
 		}
-		kPerm64x128(masterKey, uint16(c+1))
+		perm64x128(masterKey, uint16(c+1))
 	}
 
 	return &cipher
