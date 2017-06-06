@@ -82,12 +82,9 @@ func New(masterKey []uint16) *Cipher {
 }
 
 func (c *Cipher) Encrypt(x []uint16) {
-
-	var s, r, b int8
-
-	for s = 0; s < N_STEPS; s++ {
-		for b = 0; b < N_BRANCHES; b++ {
-			for r = 0; r < ROUNDS_PER_STEPS; r++ {
+	for s := 0; s < N_STEPS; s++ {
+		for b := 0; b < N_BRANCHES; b++ {
+			for r := 0; r < ROUNDS_PER_STEPS; r++ {
 				x[2*b] ^= c.k[N_BRANCHES*s+b][2*r]
 				x[2*b+1] ^= c.k[N_BRANCHES*s+b][2*r+1]
 				a(&x[2*b], &x[2*b+1])
@@ -96,24 +93,22 @@ func (c *Cipher) Encrypt(x []uint16) {
 		l2(x)
 	}
 
-	for b = 0; b < N_BRANCHES; b++ {
+	for b := 0; b < N_BRANCHES; b++ {
 		x[2*b] ^= c.k[N_BRANCHES*N_STEPS][2*b]
 		x[2*b+1] ^= c.k[N_BRANCHES*N_STEPS][2*b+1]
 	}
 }
 
 func (c *Cipher) Decrypt(x []uint16) {
-	var s, r, b int8
-
-	for b = 0; b < N_BRANCHES; b++ {
+	for b := 0; b < N_BRANCHES; b++ {
 		x[2*b] ^= c.k[N_BRANCHES*N_STEPS][2*b]
 		x[2*b+1] ^= c.k[N_BRANCHES*N_STEPS][2*b+1]
 	}
 
-	for s = N_STEPS - 1; s >= 0; s-- {
+	for s := N_STEPS - 1; s >= 0; s-- {
 		l2Inv(x)
-		for b = 0; b < N_BRANCHES; b++ {
-			for r = ROUNDS_PER_STEPS - 1; r >= 0; r-- {
+		for b := 0; b < N_BRANCHES; b++ {
+			for r := ROUNDS_PER_STEPS - 1; r >= 0; r-- {
 				aInv(&x[2*b], &x[2*b+1])
 				x[2*b] ^= c.k[N_BRANCHES*s+b][2*r]
 				x[2*b+1] ^= c.k[N_BRANCHES*s+b][2*r+1]
