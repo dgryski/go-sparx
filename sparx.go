@@ -12,14 +12,14 @@ func rotl(x uint16, n uint) uint16 {
 }
 
 const (
-	N_STEPS          = 8
-	ROUNDS_PER_STEPS = 3
-	N_BRANCHES       = 2
-	K_SIZE           = 4
+	nSteps         = 8
+	roundsPerSteps = 3
+	nBranches      = 2
+	kSize          = 4
 )
 
 type Cipher struct {
-	k [N_BRANCHES*N_STEPS + 1][2 * ROUNDS_PER_STEPS]uint16
+	k [nBranches*nSteps + 1][2 * roundsPerSteps]uint16
 }
 
 func a(l, r *uint16) {
@@ -71,8 +71,8 @@ func kPerm64x128(k []uint16, c uint16) {
 func New(masterKey []uint16) *Cipher {
 
 	var cipher Cipher
-	for c := 0; c < (N_BRANCHES*N_STEPS + 1); c++ {
-		for i := 0; i < 2*ROUNDS_PER_STEPS; i++ {
+	for c := 0; c < (nBranches*nSteps + 1); c++ {
+		for i := 0; i < 2*roundsPerSteps; i++ {
 			cipher.k[c][i] = masterKey[i]
 		}
 		kPerm64x128(masterKey, uint16(c+1))
@@ -82,36 +82,36 @@ func New(masterKey []uint16) *Cipher {
 }
 
 func (c *Cipher) Encrypt(x []uint16) {
-	for s := 0; s < N_STEPS; s++ {
-		for b := 0; b < N_BRANCHES; b++ {
-			for r := 0; r < ROUNDS_PER_STEPS; r++ {
-				x[2*b] ^= c.k[N_BRANCHES*s+b][2*r]
-				x[2*b+1] ^= c.k[N_BRANCHES*s+b][2*r+1]
+	for s := 0; s < nSteps; s++ {
+		for b := 0; b < nBranches; b++ {
+			for r := 0; r < roundsPerSteps; r++ {
+				x[2*b] ^= c.k[nBranches*s+b][2*r]
+				x[2*b+1] ^= c.k[nBranches*s+b][2*r+1]
 				a(&x[2*b], &x[2*b+1])
 			}
 		}
 		l2(x)
 	}
 
-	for b := 0; b < N_BRANCHES; b++ {
-		x[2*b] ^= c.k[N_BRANCHES*N_STEPS][2*b]
-		x[2*b+1] ^= c.k[N_BRANCHES*N_STEPS][2*b+1]
+	for b := 0; b < nBranches; b++ {
+		x[2*b] ^= c.k[nBranches*nSteps][2*b]
+		x[2*b+1] ^= c.k[nBranches*nSteps][2*b+1]
 	}
 }
 
 func (c *Cipher) Decrypt(x []uint16) {
-	for b := 0; b < N_BRANCHES; b++ {
-		x[2*b] ^= c.k[N_BRANCHES*N_STEPS][2*b]
-		x[2*b+1] ^= c.k[N_BRANCHES*N_STEPS][2*b+1]
+	for b := 0; b < nBranches; b++ {
+		x[2*b] ^= c.k[nBranches*nSteps][2*b]
+		x[2*b+1] ^= c.k[nBranches*nSteps][2*b+1]
 	}
 
-	for s := N_STEPS - 1; s >= 0; s-- {
+	for s := nSteps - 1; s >= 0; s-- {
 		l2Inv(x)
-		for b := 0; b < N_BRANCHES; b++ {
-			for r := ROUNDS_PER_STEPS - 1; r >= 0; r-- {
+		for b := 0; b < nBranches; b++ {
+			for r := roundsPerSteps - 1; r >= 0; r-- {
 				aInv(&x[2*b], &x[2*b+1])
-				x[2*b] ^= c.k[N_BRANCHES*s+b][2*r]
-				x[2*b+1] ^= c.k[N_BRANCHES*s+b][2*r+1]
+				x[2*b] ^= c.k[nBranches*s+b][2*r]
+				x[2*b+1] ^= c.k[nBranches*s+b][2*r+1]
 			}
 		}
 	}
