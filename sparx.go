@@ -15,7 +15,6 @@ const (
 	nSteps         = 8
 	roundsPerSteps = 3
 	nBranches      = 2
-	kSize          = 4
 )
 
 type Cipher struct {
