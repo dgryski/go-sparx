@@ -21,18 +21,20 @@ type Cipher struct {
 	k [nBranches*nSteps + 1][2 * roundsPerSteps]uint16
 }
 
-func a(l, r *uint16) {
-	(*l) = rotl((*l), 9)
-	(*l) += (*r)
-	(*r) = rotl((*r), 2)
-	(*r) ^= (*l)
+func a(l, r uint16) (uint16, uint16) {
+	l = rotl(l, 9)
+	l += r
+	r = rotl(r, 2)
+	r ^= l
+	return l, r
 }
 
-func aInv(l, r *uint16) {
-	(*r) ^= (*l)
-	(*r) = rotl((*r), 14)
-	(*l) -= (*r)
-	(*l) = rotl((*l), 7)
+func aInv(l, r uint16) (uint16, uint16) {
+	r ^= l
+	r = rotl(r, 14)
+	l -= r
+	l = rotl(l, 7)
+	return l, r
 }
 
 func l2(x []uint16) {
@@ -53,7 +55,7 @@ func l2Inv(x []uint16) {
 
 func perm64x128(k []uint16, c uint16) {
 	/* Misty-like transformation */
-	a(&k[0], &k[1])
+	k[0], k[1] = a(k[0], k[1])
 	k[2] += k[0]
 	k[3] += k[1]
 	k[7] += c
@@ -86,7 +88,7 @@ func (c *Cipher) Encrypt(x []uint16) {
 			for r := 0; r < roundsPerSteps; r++ {
 				x[2*b] ^= c.k[nBranches*s+b][2*r]
 				x[2*b+1] ^= c.k[nBranches*s+b][2*r+1]
-				a(&x[2*b], &x[2*b+1])
+				x[2*b], x[2*b+1] = a(x[2*b], x[2*b+1])
 			}
 		}
 		l2(x)
@@ -108,7 +110,7 @@ func (c *Cipher) Decrypt(x []uint16) {
 		l2Inv(x)
 		for b := 0; b < nBranches; b++ {
 			for r := roundsPerSteps - 1; r >= 0; r-- {
-				aInv(&x[2*b], &x[2*b+1])
+				x[2*b], x[2*b+1] = aInv(x[2*b], x[2*b+1])
 				x[2*b] ^= c.k[nBranches*s+b][2*r]
 				x[2*b+1] ^= c.k[nBranches*s+b][2*r+1]
 			}
