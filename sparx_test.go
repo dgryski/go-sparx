@@ -10,20 +10,18 @@ func TestSPARX(t *testing.T) {
 	plain := []uint16{0x0123, 0x4567, 0x89ab, 0xcdef}
 	cipher := []uint16{0x2bbe, 0xf152, 0x01f5, 0x5f98}
 
-	var k [N_BRANCHES*N_STEPS + 1][2 * ROUNDS_PER_STEPS]uint16
-
-	KeySchedule(&k, key)
+	c := New(key)
 
 	d := make([]uint16, len(plain))
 	copy(d, plain)
 
-	Encrypt(d, &k)
+	c.Encrypt(d)
 	if !reflect.DeepEqual(d, cipher) {
 		t.Errorf("encrypt failed")
 	}
 
 	copy(d, cipher)
-	Decrypt(d, &k)
+	c.Decrypt(d)
 	if !reflect.DeepEqual(d, plain) {
 		t.Errorf("decrypt failed")
 	}
