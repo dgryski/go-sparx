@@ -1,8 +1,8 @@
 package sparx
 
 import (
+	"bytes"
 	"crypto/cipher"
-	"reflect"
 	"testing"
 )
 
@@ -17,13 +17,13 @@ func TestSPARX(t *testing.T) {
 	copy(d, plain)
 
 	c.Encrypt(d, d)
-	if !reflect.DeepEqual(d, cipher) {
+	if !bytes.Equal(d, cipher) {
 		t.Errorf("encrypt failed")
 	}
 
 	copy(d, cipher)
 	c.Decrypt(d, d)
-	if !reflect.DeepEqual(d, plain) {
+	if !bytes.Equal(d, plain) {
 		t.Errorf("decrypt failed")
 	}
 }
